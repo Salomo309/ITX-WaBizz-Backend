@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"os"
+	"database/sql"
 
 	"itx-wabizz/handlers"
 	"itx-wabizz/middlewares"
@@ -30,6 +31,21 @@ func main() {
 	// Get port from .env and start server
 	fmt.Println()
 	router.Run(GetEnvPortOr("8080"))
+
+	db, err := sql.Open("mysql", "root:admin123@tcp(mysql:3306)/itxwabizzdb")
+
+    if err != nil {
+        panic(err.Error())
+    }
+    defer db.Close()
+
+    // Coba lakukan ping ke database
+    err = db.Ping()
+    if err != nil {
+        panic(err.Error())
+    }
+
+    fmt.Println("Koneksi ke database MySQL berhasil!")
 }
 
 func GetEnvPortOr(port string) string {

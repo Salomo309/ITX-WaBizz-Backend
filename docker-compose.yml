@@ -2,18 +2,17 @@ version: '3.8'
 services:
   backend:
     build: .
-    env_file:
-    - .env
     container_name: backend
     ports:
-      - ${PORT}:${PORT}
+      - 8080:8080
 
   db:
     image: mysql:latest
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    env_file:
-    - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: itxwabizzdb
     container_name: database
     ports:
-      - ${MYSQL_PORT}:3306
+      - 3306:3306

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
@@ -29,9 +28,9 @@ func main() {
 	router.GET("/api", handlers.HelloHandler)
 
 	// Get port from .env and start server
-	fmt.Println()
 	router.Run(GetEnvPortOr("8080"))
 
+	// Connect to database
 	db, err := sql.Open("mysql", "root:admin123@tcp(mysql:3306)/itxwabizzdb")
 
     if err != nil {
@@ -44,8 +43,6 @@ func main() {
     if err != nil {
         panic(err.Error())
     }
-
-    fmt.Println("Koneksi ke database MySQL berhasil!")
 }
 
 func GetEnvPortOr(port string) string {

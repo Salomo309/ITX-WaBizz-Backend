@@ -1,29 +1,32 @@
 package main
 
 import (
-	"database/sql"
-	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+
 	"itx-wabizz/handlers"
 	"itx-wabizz/middlewares"
-	"itx-wabizz/configs"
+	"itx-wabizz/repositories"
 )
 
-var Db *sql.DB
-
-func main() {
+func init() {
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
 
+func main() {
 	// Initialize connection to database
-	initDatabaseConnection()
-	defer Db.Close()
+	repositories.InitDatabaseConnection()
+	defer repositories.Db.Close()
+
+	// Initialize all repositories needed
+	repositories.InitRepositories()
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -34,22 +37,15 @@ func main() {
 	// Define endpoints for back-end services
 	// General handler
 	router.GET("/api", handlers.HelloHandler)
+	apis := router.Group("/api")
+
+	// Authorization handlers
+	apis.POST("/login", handlers.HandleGoogleLogin)
+	apis.GET("/auth/google/callback", handlers.HandleGoogleCallback)
+	apis.POST("/logout", handlers.HandleLogout)
 
 	// Get port from .env and start server
 	router.Run(getEnvPortOr("8080"))
-}
-
-func initDatabaseConnection() {
-	var err error
-	Db, err = sql.Open("mysql", configs.MysqlUser + ":" + configs.MysqlPassword +"@tcp(" + configs.MysqlHost + ":3306)/" + configs.MysqlDatabase)
-	if err != nil {
-		log.Fatal("Error connecting to database:", err)
-	}
-
-	// Ping database to check if the connection is valid
-	if err := Db.Ping(); err != nil {
-		log.Fatal("Error pinging database:", err)
-	}
 }
 
 func getEnvPortOr(port string) string {

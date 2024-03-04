@@ -89,3 +89,8 @@ func HandleGoogleCallback(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, userResponseToken)
 }
+
+// Handler to logout from application
+func HandleLogout(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"Message": "Logout successful"})
+}

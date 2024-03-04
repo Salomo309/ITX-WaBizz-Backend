@@ -42,6 +42,7 @@ func main() {
 	// Authorization handlers
 	apis.POST("/login", handlers.HandleGoogleLogin)
 	apis.GET("/auth/google/callback", handlers.HandleGoogleCallback)
+	apis.POST("/logout", handlers.HandleLogout)
 
 	// Get port from .env and start server
 	router.Run(getEnvPortOr("8080"))

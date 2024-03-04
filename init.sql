@@ -13,11 +13,13 @@ CREATE TABLE IF NOT EXISTS Chat (
     FOREIGN KEY (chatroom_id) REFERENCES Chatroom(chatroom_id)
 );
 
-CREATE TABLE IF NOT EXISTS User (
+CREATE TABLE IF NOT EXISTS Users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    admin_name VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(50) NOT NULL
+    google_id VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    picture VARCHAR(1024) NOT NULL,
+    admin BOOLEAN NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Reply (
@@ -28,5 +30,5 @@ CREATE TABLE IF NOT EXISTS Reply (
     content TEXT NOT NULL,
     statusRead ENUM('sent', 'delivered', 'read'),
     FOREIGN KEY (chatroom_id) REFERENCES Chatroom(chatroom_id),
-    FOREIGN KEY (user_id) REFERENCES User(user_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );

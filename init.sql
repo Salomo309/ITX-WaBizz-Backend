@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS Users (
     admin BOOLEAN NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS Refresh_Tokens (
+    google_id VARCHAR(255) PRIMARY KEY,
+    refresh_token VARCHAR(2048) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS Reply (
     reply_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

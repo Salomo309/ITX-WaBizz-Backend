@@ -25,7 +25,7 @@ func VerifyTokenMiddleware() gin.HandlerFunc {
 		// Get authorization token and ask its validity with Google API
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		res, err := http.Get("https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + token)
+		res, err := http.Get("https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error": "Failed to get response"})
 			return
@@ -43,6 +43,7 @@ func VerifyTokenMiddleware() gin.HandlerFunc {
 		// Check for error in Google response
 		if _, ok := response["error_description"]; ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error": "Token verification failed"})
+			return
 		}
 
 		// Go to next handler if token valid, if not then abort
@@ -50,6 +51,7 @@ func VerifyTokenMiddleware() gin.HandlerFunc {
 			c.Next()
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error": "Invalid token"})
+			return
 		}
 	}
 }

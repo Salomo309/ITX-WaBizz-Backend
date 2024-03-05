@@ -9,6 +9,7 @@ import (
 // Interface for user repository
 type UserRepository interface {
 	Insert(user *models.User) error
+	GetUserByGoogleID(googleID string) (*models.User, error)
 }
 
 // Implementation of user repository

@@ -24,3 +24,7 @@ type UserResponseToken struct {
     Picture     string 	`json:"picture"`
 	Admin		bool	`json:"admin"`
 }
+
+type LogoutRequestToken struct {
+    Google_ID   string  `json:"google_id"`
+}

@@ -11,5 +11,5 @@ type RefreshToken struct {
 
 type AccessTokenResponse struct {
 	Google_ID     string	`json:"google_id"`
-	Access_Token  string	`json:"access_token"`
+	Token  		  string	`json:"token"`
 }

@@ -16,11 +16,11 @@ func ConfigureRouter(router *gin.Engine) {
 	router.GET("/api", handlers.HelloHandler)
 	apis := router.Group("/api")
 
-	// Authorization handlers
+	// Authorization endpoints
 	apis.POST("/login", handlers.HandleGoogleLogin)
 	apis.GET("/auth/google/callback", handlers.HandleGoogleCallback)
-	apis.POST("/logout", handlers.HandleLogout)
 	apis.POST("/refresh-token", handlers.HandleNewAccessToken)
+	apis.POST("/logout", middlewares.VerifyTokenMiddleware(), handlers.HandleLogout)
 
 }
 

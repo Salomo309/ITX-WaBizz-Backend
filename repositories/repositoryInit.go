@@ -11,6 +11,7 @@ var (
 	// Database connection and important repositories that are needed throught app lifetime
 	Db *sql.DB
 	UserRepo *MySQLUserRepository
+	ChatlistRepo *MySQLChatListRepository
 )
 
 func InitDatabaseConnection() {
@@ -29,6 +30,7 @@ func InitDatabaseConnection() {
 func InitRepositories() {
 	var err error
 	UserRepo, err = NewMySQLUserRepository(Db)
+	ChatlistRepo, err = NewMySQLChatListRepository(Db)
 	if err != nil {
 		log.Fatal("Error initiating repositories")
 	}

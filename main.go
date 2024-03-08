@@ -44,6 +44,10 @@ func main() {
 	apis.GET("/auth/google/callback", handlers.HandleGoogleCallback)
 	apis.POST("/logout", handlers.HandleLogout)
 
+	// Infobip handlers
+	apis.POST("/send-message", handlers.HandleSendMessage)
+	apis.POST("/receive-message", handlers.HandleReceiveMessage)
+
 	// Get port from .env and start server
 	router.Run(getEnvPortOr("8080"))
 }

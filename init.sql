@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS Chat (
     isRead TINYINT(1),
     statusRead ENUM('sent', 'delivered', 'read'),
     content TEXT NOT NULL,
+    messageType ENUM('text','photo','video'),
     FOREIGN KEY (chatroom_id) REFERENCES Chatroom(chatroom_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );

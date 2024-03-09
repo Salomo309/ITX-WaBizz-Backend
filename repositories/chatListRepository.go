@@ -16,7 +16,7 @@ type MySQLChatListRepository struct {
 }
 
 func NewMySQLChatListRepository(db *sql.DB) (*MySQLChatListRepository, error){
-	getChatListStmt, err := db.Prepare(`SELECT Chatroom.customer_name AS CustomerName, res.timendate AS Timendate, Chat.isRead AS IsRead, Chat.statusRead AS StatusRead, Chat.content AS Content
+	getChatListStmt, err := db.Prepare(`SELECT Chatroom.customer_name AS CustomerName, res.timendate AS Timendate, Chat.isRead AS IsRead, Chat.statusRead AS StatusRead, Chat.content AS Content, Chat.messageType AS MessageType
 	FROM
 		(SELECT chatroom_id, MAX(timendate) AS timendate
 		FROM Chat GROUP BY chatroom_id)
@@ -37,7 +37,7 @@ func (repo *MySQLChatListRepository) GetChatList() (*models.ChatList, error){
 	row := repo.getChatListStmt.QueryRow()
 
 	var chatlist models.ChatList
-	err := row.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.IsRead, &chatlist.StatusRead, &chatlist.Content)
+	err := row.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.IsRead, &chatlist.StatusRead, &chatlist.Content, &chatlist.MessageType)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

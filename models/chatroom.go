@@ -6,4 +6,5 @@ type ChatList struct {
 	IsRead			*bool
 	StatusRead		*string
 	Content			string
+	MessageType		string
 }

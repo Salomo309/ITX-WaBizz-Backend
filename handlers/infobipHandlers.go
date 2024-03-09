@@ -2,13 +2,19 @@ package handlers
 
 import (
     "fmt"
-    "strings"
     "net/http"
     "io/ioutil"
 
-	"github.com/gin-gonic/gin"
+	"context"
 
-	// "itx-wabizz/models"
+	"github.com/gin-gonic/gin"
+	"github.com/infobip-community/infobip-api-go-sdk/v3/pkg/infobip"
+	"github.com/infobip-community/infobip-api-go-sdk/v3/pkg/infobip/models"
+)
+
+const (
+	apiKey  = "7dc75baa5ee04eecd96b9de85644da23-7215f447-3122-4036-9983-21dd3b6ff449"
+	baseURL = "n89mny.api.infobip.com"
 )
 
 func HandleReceiveMessage(c *gin.Context) {
@@ -27,37 +33,111 @@ func HandleReceiveMessage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": string(body)})
 }
 
-func HandleSendMessage(c *gin.Context) {
-	fmt.Fprintf(c.Writer, "HandleSendMessage is called")
-	url := "https://n89mny.api.infobip.com/whatsapp/1/message/template"
-	method := "POST"
+func HandleSendTextMessage(c *gin.Context) {
+	fmt.Println("API Key:", apiKey)
+	fmt.Println("Base URL:", baseURL)
+	client, err := infobip.NewClient(baseURL, apiKey)
 
-	payload := strings.NewReader(`{"messages":[{"from":"447860099299","to":"6281360778689","messageId":"90db5876-18e5-4aae-af3c-2567185b4af7","content":{"templateName":"message_test","templateData":{"body":{"placeholders":["Salomo"]}},"language":"en"}}]}`)
-
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	message := models.WATextMsg{
+		MsgCommon: models.MsgCommon{
+			From: "447860099299",
+			To:   "6281360778689",
+		},
+		Content: models.TextContent{
+			Text: "Hai sallll",
+		},
+	}
+	msgResp, respDetails, err := client.WhatsApp.SendText(context.Background(), message)
 	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to create request: %v", err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	req.Header.Add("Authorization", "App 7dc75baa5ee04eecd96b9de85644da23-7215f447-3122-4036-9983-21dd3b6ff449")
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-
-	res, err := client.Do(req)
-	if err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send message: %v", err))
-		return
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send message: status code %d", res.StatusCode))
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Message sent successfully",
-	})
+	fmt.Printf("%+v\n", msgResp)
+	fmt.Printf("%+v\n", respDetails)
 }
 
+func HandleSendDocumentMessage(c *gin.Context) {
+	fmt.Println("API Key:", apiKey)
+	fmt.Println("Base URL:", baseURL)
+	client, err := infobip.NewClient(baseURL, apiKey)
+
+	message := models.WATextMsg{
+		MsgCommon: models.MsgCommon{
+			From: "447860099299",
+			To:   "6281360778689",
+		},
+		Content: models.DocumentContent{MediaURL: "https://myurl.com/doc1.doc"},
+	}
+	msgResp, respDetails, err := client.WhatsApp.SendDocument(context.Background(), message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("%+v\n", msgResp)
+	fmt.Printf("%+v\n", respDetails)
+}
+
+func HandleSendDocumentMessage(c *gin.Context) {
+	fmt.Println("API Key:", apiKey)
+	fmt.Println("Base URL:", baseURL)
+	client, err := infobip.NewClient(baseURL, apiKey)
+
+	message := models.WATextMsg{
+		MsgCommon: models.MsgCommon{
+			From: "447860099299",
+			To:   "6281360778689",
+		},
+		Content: models.ImageContent{
+			MediaURL: "https://thumbs.dreamstime.com/z/example-red-tag-example-red-square-price-tag-117502755.jpg",
+		},
+	}
+	msgResp, respDetails, err := client.WhatsApp.SendImage(context.Background(), message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("%+v\n", msgResp)
+	fmt.Printf("%+v\n", respDetails)
+}
+
+func HandleSendAudioMessage(c *gin.Context) {
+	fmt.Println("API Key:", apiKey)
+	fmt.Println("Base URL:", baseURL)
+	client, err := infobip.NewClient(baseURL, apiKey)
+
+	message := models.WATextMsg{
+		MsgCommon: models.MsgCommon{
+			From: "447860099299",
+			To:   "6281360778689",
+		},
+		Content: models.AudioContent{MediaURL: "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac"},
+	}
+	msgResp, respDetails, err := client.WhatsApp.SendAudio(context.Background(), message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("%+v\n", msgResp)
+	fmt.Printf("%+v\n", respDetails)
+}
+
+func HandleSendAudioMessage(c *gin.Context) {
+	fmt.Println("API Key:", apiKey)
+	fmt.Println("Base URL:", baseURL)
+	client, err := infobip.NewClient(baseURL, apiKey)
+
+	message := models.WATextMsg{
+		MsgCommon: models.MsgCommon{
+			From: "447860099299",
+			To:   "6281360778689",
+		},
+		Content: models.VideoContent{MediaURL: "https://download.samplelib.com/mp4/sample-5s.mp4"},
+	}
+	msgResp, respDetails, err := client.WhatsApp.SendVideo(context.Background(), message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("%+v\n", msgResp)
+	fmt.Printf("%+v\n", respDetails)
+}

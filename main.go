@@ -45,7 +45,11 @@ func main() {
 	apis.POST("/logout", handlers.HandleLogout)
 
 	// Infobip handlers
-	apis.POST("/send-message", handlers.HandleSendMessage)
+	apis.POST("/send-message/text", handlers.HandleSendTextMessage)
+	apis.POST("/send-message/doc", handlers.HandleSendDocumentMessage)
+	apis.POST("/send-message/img", handlers.HandleSendImageMessage)
+	apis.POST("/send-message/audio", handlers.HandleSendAudioMessage)
+	apis.POST("/send-message/video", handlers.HandleSendVideoMessage)
 	apis.POST("/receive-message", handlers.HandleReceiveMessage)
 
 	// Get port from .env and start server

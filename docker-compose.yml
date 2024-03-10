@@ -28,7 +28,7 @@ services:
       - itx-wabizz-backend
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 10s
       retries: 10
 
 networks:

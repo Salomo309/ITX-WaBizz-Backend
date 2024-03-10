@@ -34,7 +34,7 @@ func InitRepositories() {
 	if err != nil {
 		log.Fatal("Error initiating repositories" + err.Error())
 	}
-	
+
 	ChatlistRepo, err = NewMySQLChatListRepository(Db)
 	if err != nil {
 		log.Fatal("Error initiating repositories" + err.Error())

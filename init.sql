@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS Users (
     admin TINYINT(1) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS Refresh_Tokens (
+    google_id VARCHAR(255) NOT NULL,
+    refresh_token VARCHAR(2048) NOT NULL
+)
+
 CREATE TABLE IF NOT EXISTS Chat (
     chat_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,

@@ -6,8 +6,8 @@ import (
 	"itx-wabizz/models"
 )
 
-type chatListRepository interface {
-	Insert(user *models.ChatList) error
+type ChatListRepository interface {
+	GetChatList() ([]models.ChatList, error)
 }
 
 type MySQLChatListRepository struct {

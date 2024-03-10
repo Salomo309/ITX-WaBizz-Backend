@@ -17,9 +17,14 @@ type User struct {
 }
 
 type UserResponseToken struct {
+    Google_ID   string  `json:"google_id"`
 	Token		string 	`json:"token"`
 	Email       string 	`json:"email"`
     Name        string 	`json:"name"`
     Picture     string 	`json:"picture"`
 	Admin		bool	`json:"admin"`
+}
+
+type LogoutRequestToken struct {
+    Google_ID   string  `json:"google_id"`
 }

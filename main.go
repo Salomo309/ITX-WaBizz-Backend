@@ -8,9 +8,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 
-	"itx-wabizz/handlers"
-	"itx-wabizz/middlewares"
 	"itx-wabizz/repositories"
+	"itx-wabizz/router"
 )
 
 func init() {
@@ -29,24 +28,13 @@ func main() {
 	repositories.InitRepositories()
 
 	// Initialize Gin router
-	router := gin.Default()
+	r := gin.Default()
 
-	// Enable CORS for all endpoints
-	router.Use(middlewares.CorsMiddleware())
-
-	// Define endpoints for back-end services
-	// General handler
-	router.GET("/api", handlers.HelloHandler)
-	apis := router.Group("/api")
-
-	// Authorization handlers
-	apis.POST("/login", handlers.HandleGoogleLogin)
-	apis.GET("/auth/google/callback", handlers.HandleGoogleCallback)
-	apis.POST("/logout", handlers.HandleLogout)
-	apis.GET("/chatlist", handlers.HandleChatlist)
+	// Configure router to include routes and middlewares
+	router.ConfigureRouter(r)
 
 	// Get port from .env and start server
-	router.Run(getEnvPortOr("8080"))
+	r.Run(getEnvPortOr("8080"))
 }
 
 func getEnvPortOr(port string) string {

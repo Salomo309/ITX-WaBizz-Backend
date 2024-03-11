@@ -3,8 +3,9 @@ package models
 type ChatList struct {
 	CustomerName string `json:"customerName"`
     Timendate    string `json:"timendate"`
-    IsRead       *bool   `json:"isRead"`
-    StatusRead   *string `json:"statusRead"`
+    IsRead       string   `json:"isRead"`
+    StatusRead   string `json:"statusRead"`
     Content      string `json:"content"`
 	MessageType	 string `json:"messageType"`
+    CountUnread  int    `json:"countUnread"`
 }

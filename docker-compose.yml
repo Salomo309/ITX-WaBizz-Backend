@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    env_file:
+      - .env
+    container_name: backend
+    ports:
+      - ${PORT}:${PORT}
+    networks:
+      - itx-wabizz-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    container_name: mysql
+    ports:
+      - ${MYSQL_PORT}:3306
+    networks:
+      - itx-wabizz-backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+networks:
+  itx-wabizz-backend:
+    driver: bridge

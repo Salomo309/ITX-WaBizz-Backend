@@ -106,7 +106,7 @@ func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText strin
 				Chat.chatroom_id = res2.chatroom_id
 		) AS Subquery
 		WHERE
-			RowNum = 1 AND CustomerName LIKE ?
+			RowNum = 1 AND CustomerName LIKE CONCAT('%', ?, '%')
     `
     rows, err := repo.db.Query(query, "%"+searchText+"%", "%"+searchText+"%", "%"+searchText+"%")
     if err != nil {

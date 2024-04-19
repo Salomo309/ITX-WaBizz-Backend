@@ -3,7 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
-	
+
 	"itx-wabizz/models"
 )
 
@@ -210,6 +210,9 @@ func (repo *MySQLChatListRepository) GetChatroomByPhone(customerPhone string) (*
 	var chatroom models.Chatroom
 	err := row.Scan(&chatroom.ChatroomID, &chatroom.CustomerPhone, &chatroom.CustomerName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 

@@ -1,4 +1,4 @@
-package infobip
+package main
 
 import (
 	"fmt"

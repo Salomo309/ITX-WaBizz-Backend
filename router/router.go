@@ -24,8 +24,8 @@ func ConfigureRouter(router *gin.Engine) {
 
 	// Chatlist endpoints
 	apis.GET("/chatlist", handlers.HandleChatlist)
-	apis.GET("/chatlist-search-by-contact?query=search_term", handlers.HandleChatlistSearch)
-	apis.GET("/chatlist-search-by-message?query=search_term", handlers.HandleChatlistSearch)
+	apis.GET("/chatlist-search-by-contact", handlers.HandleChatlistSearchByContact)
+	apis.GET("/chatlist-search-by-message", handlers.HandleChatlistSearchByMessage)
 
 }
 

@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
+
 	"itx-wabizz/models"
 )
 
@@ -10,11 +11,17 @@ type ChatListRepository interface {
 	GetChatList() ([]models.ChatList, error)
 	SearchChatListByContact(string) ([]models.ChatList, error)
 	SearchChatListByMessage(string) ([]models.ChatList, error)
+	Insert(*models.Chatroom) error
+	GetChatroomByPhone(string) (*models.Chatroom, error) 
+	GetChatroomByID(int) (*models.Chatroom, error)
 }
 
 type MySQLChatListRepository struct {
-	db					*sql.DB
-	getChatListStmt		*sql.Stmt
+	db						*sql.DB
+	getChatListStmt			*sql.Stmt
+	insertStmt				*sql.Stmt
+	getChatroomByPhoneStmt	*sql.Stmt
+	getChatroomByIDStmt		*sql.Stmt
 }
 
 func NewMySQLChatListRepository(db *sql.DB) (*MySQLChatListRepository, error){
@@ -52,11 +59,27 @@ WHERE
 		return nil, err
 	}
 
+	insertStmt, err := db.Prepare("INSERT INTO Chatroom (customer_phone, customer_name) values (?, ?)")
+	if err != nil {
+		return nil, err
+	}
 
+	getChatroomByPhoneStmt, err := db.Prepare("SELECT chatroom_id, customer_phone, customer_name FROM Chatroom WHERE customer_phone = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	getChatroomByIDStmt, err := db.Prepare("SELECT chatroom_id, customer_phone, customer_name FROM Chatroom WHERE chatroom_id = ?")
+	if err != nil {
+		return nil, err
+	}
 
 	return &MySQLChatListRepository{
-		db:				db,
-		getChatListStmt:getChatListStmt,
+		db:						db,
+		getChatListStmt:		getChatListStmt,
+		insertStmt: 			insertStmt,
+		getChatroomByPhoneStmt: getChatroomByPhoneStmt,
+		getChatroomByIDStmt: 	getChatroomByIDStmt,
 	}, nil
 }
 
@@ -181,4 +204,39 @@ func (repo *MySQLChatListRepository) SearchChatListByMessage(searchText string) 
 	}
 
 	return chatlists, nil
+}
+
+func (repo *MySQLChatListRepository) Insert(chatroom *models.Chatroom) error {
+	_, err := repo.insertStmt.Exec(chatroom.CustomerPhone, chatroom.CustomerName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *MySQLChatListRepository) GetChatroomByPhone(customerPhone string) (*models.Chatroom, error) {
+	row := repo.getChatroomByPhoneStmt.QueryRow(customerPhone)
+
+	var chatroom models.Chatroom
+	err := row.Scan(&chatroom.ChatroomID, &chatroom.CustomerPhone, &chatroom.CustomerName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &chatroom, nil
+}
+
+func (repo *MySQLChatListRepository) GetChatroomByID(chatroomID int) (*models.Chatroom, error) {
+	row := repo.getChatroomByIDStmt.QueryRow(chatroomID)
+
+	var chatroom models.Chatroom
+	err := row.Scan(&chatroom.ChatroomID, &chatroom.CustomerPhone, &chatroom.CustomerName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &chatroom, nil
 }

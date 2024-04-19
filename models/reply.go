@@ -1,10 +1,10 @@
 package models
 
 type Reply struct {
-	ReplyId		 int	`json:replyId`
-	UserId		 int	`json:userId`
-	ChatroomId	 int 	`json:chatroomId`
-	Timendate	 string `json:timendate`
-	content		 string	`json:content`
-	statusRead	 string	`json:statusRead`
+	ReplyId		 int	`json:"ReplyID"`
+	UserId		 int	`json:"UserID"`
+	ChatroomId	 int 	`json:"ChatroomID"`
+	Timendate	 string `json:"Timendate"`
+	content		 string	`json:"Content"`
+	statusRead	 string	`json:"StatusRead"`
 }

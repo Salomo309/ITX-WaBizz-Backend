@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Users (
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL PRIMARY KEY,
     is_active BOOLEAN NOT NULL
 );
 
@@ -25,11 +25,11 @@ CREATE TABLE IF NOT EXISTS Chat (
 INSERT INTO Chatroom VALUES (NULL,'08141341134','Budiono');
 INSERT INTO Chatroom VALUES (NULL,'08983517193','Vivi');
 INSERT INTO Chatroom VALUES (NULL,'08183920340','Aldo');
-INSERT INTO Users VALUES (NULL, '1', 'asep@gmail.com', 'Asep', '/asep', 0);
-INSERT INTO Users VALUES (NULL, '2', 'bakti@gmail.com', 'Bakti', '/bakti', 0);
-INSERT INTO Chat VALUES (NULL,1,1,'2024-03-07 13:00:00', 'null', 'read', 'Sudah diterima', 'text');
+INSERT INTO Users VALUES ('asep@gmail.com', True);
+INSERT INTO Users VALUES ('bakti@gmail.com', False);
+INSERT INTO Chat VALUES (NULL,'asep@gmail.com',1,'2024-03-07 13:00:00', 'null', 'read', 'Sudah diterima', 'text');
 INSERT INTO Chat VALUES (NULL,NULL,1,'2024-03-07 13:01:00', '0', 'null', 'Ok', 'text');
 INSERT INTO Chat VALUES (NULL,NULL,1,'2024-03-07 13:01:00', '0', 'null', 'Terima kasih', 'text');
 INSERT INTO Chat VALUES (NULL,NULL,2,'2024-03-07 14:23:00', '1', 'null', 'Bisa kirimkan resinya?', 'text');
-INSERT INTO Chat VALUES (NULL,2,2,'2024-03-07 14:24:00', 'null', 'delivered', '/photo', 'photo');
+INSERT INTO Chat VALUES (NULL,'bakti@gmail.com',2,'2024-03-07 14:24:00', 'null', 'delivered', '/photo', 'photo');
 INSERT INTO Chat VALUES (NULL,NULL,3,'2024-03-01 15:01:00', '1', 'null', 'Halo', 'text');

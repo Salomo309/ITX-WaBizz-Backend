@@ -8,11 +8,13 @@ import (
 
 type ChatListRepository interface {
 	GetChatList() ([]models.ChatList, error)
+	SearchChatListByContact(string) ([]models.ChatList, error)
+	SearchChatListByMessage(string) ([]models.ChatList, error)
 }
 
 type MySQLChatListRepository struct {
-	db				*sql.DB
-	getChatListStmt	*sql.Stmt
+	db					*sql.DB
+	getChatListStmt		*sql.Stmt
 }
 
 func NewMySQLChatListRepository(db *sql.DB) (*MySQLChatListRepository, error){
@@ -50,6 +52,8 @@ WHERE
 		return nil, err
 	}
 
+
+
 	return &MySQLChatListRepository{
 		db:				db,
 		getChatListStmt:getChatListStmt,
@@ -83,7 +87,7 @@ func (repo *MySQLChatListRepository) GetChatList() ([]models.ChatList, error){
 	return chatlists, nil
 }
 
-func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText string) ([]models.ChatList, error){
+func (repo *MySQLChatListRepository) SearchChatListByContact(searchText string) ([]models.ChatList, error){
 	query := `
 		SELECT CustomerName, Timendate,	IsRead,	StatusRead, Content, MessageType, CountUnread
 		FROM (
@@ -134,7 +138,7 @@ func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText strin
 	return chatlists, nil
 }
 
-func (repo *MySQLChatListRepository) SearchChatListByMessage() (searchText string) ([]models.ChatList, error){
+func (repo *MySQLChatListRepository) SearchChatListByMessage(searchText string) ([]models.ChatList, error){
 	query := `
 		SELECT CustomerName, Timendate, Content
 		FROM (

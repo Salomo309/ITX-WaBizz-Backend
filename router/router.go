@@ -22,8 +22,9 @@ func ConfigureRouter(router *gin.Engine) {
 	apis.GET("/chatlist-search-by-message", handlers.HandleChatlistSearchByMessage)
 
 	// Chat Endpoints
-	apis.POST("/send-msg", handlers.HandleSendMessage)
-	apis.POST("rcv-msg", handlers.HandleReceiveMessage)
+	apis.GET("/chatroom", handlers.HandleGetChatroom)
+	apis.POST("/chatroom/send", handlers.HandleSendMessage)
+	apis.POST("/chatroom/receive", handlers.HandleReceiveMessage)
 
 }
 

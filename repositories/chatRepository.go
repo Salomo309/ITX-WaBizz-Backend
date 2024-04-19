@@ -8,7 +8,7 @@ import (
 
 type ChatRepository interface {
 	CreateChat(chat *models.Chat) error
-	GetChat(chatId int) (*models.Chat, error)
+	GetChats(chatroomID int) (*models.Chat, error)
 }
 
 type MySQLChatRepository struct {
@@ -25,7 +25,7 @@ func NewMySQLChatRepository(db *sql.DB) (*MySQLChatRepository, error) {
 		return nil, err
 	}
 
-	getStmt, err := db.Prepare("SELECT chatId, chatroomId, timendate, isRead, content FROM Chat WHERE chatId = ?")
+	getStmt, err := db.Prepare("SELECT chat_id, email, chatroom_id, timendate, isRead, statusRead, content, messageType FROM Chat WHERE chatroom_id = ?")
 	if err != nil {
 		fmt.Println("Error preparing get statement:", err)
 		return nil, err
@@ -39,7 +39,7 @@ func NewMySQLChatRepository(db *sql.DB) (*MySQLChatRepository, error) {
 }
 
 func (repo *MySQLChatRepository) CreateChat(chat *models.Chat) error {
-	_, err := repo.createStmt.Exec(chat.ChatroomId, chat.Timendate, chat.IsRead, chat.Content)
+	_, err := repo.createStmt.Exec(chat.ChatroomID, chat.Timendate, chat.IsRead, chat.Content)
 	if err != nil {
 		fmt.Println("Error executing create statement:", err)
 		return err
@@ -47,12 +47,27 @@ func (repo *MySQLChatRepository) CreateChat(chat *models.Chat) error {
 	return nil
 }
 
-func (repo *MySQLChatRepository) GetChat(chatId int) (*models.Chat, error) {
-	chat := &models.Chat{}
-	err := repo.getStmt.QueryRow(chatId).Scan(&chat.ChatId, &chat.ChatroomId, &chat.Timendate, &chat.IsRead, &chat.Content)
+func (repo *MySQLChatRepository) GetChats(chatroomID int) ([]models.Chat, error) {
+	rows, err := repo.getStmt.Query(chatroomID)
 	if err != nil {
-		fmt.Println("Error retrieving chat:", err)
 		return nil, err
 	}
-	return chat, nil
+	defer rows.Close()
+
+	var chats []models.Chat
+
+	for rows.Next() {
+		var chat models.Chat
+		err := rows.Scan(&chat.ChatID, &chat.Email, &chat.ChatroomID, &chat.Timendate, &chat.IsRead, &chat.StatusRead, &chat.Content, &chat.MessageType)
+		if err != nil {
+			return nil, err
+		}
+		chats = append(chats, chat)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return chats, nil
 }

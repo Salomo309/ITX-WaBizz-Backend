@@ -27,6 +27,10 @@ func ConfigureRouter(router *gin.Engine) {
 	apis.GET("/chatlist-search-by-contact?query=search_term", handlers.HandleChatlistSearch)
 	apis.GET("/chatlist-search-by-message?query=search_term", handlers.HandleChatlistSearch)
 
+	// Chat Endpoints
+	apis.POST("/send-msg", handlers.HandleSendMessage)
+	apis.POST("rcv-msg", handlers.HandleReceiveMessage)
+
 }
 
 func applyCorsMiddleware(router *gin.Engine) {

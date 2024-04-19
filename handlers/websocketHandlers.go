@@ -30,7 +30,7 @@ func removeConnection(id string) {
 	delete(connections, id)
 }
 
-func SendMessageToAll(message []byte) {
+func SendMessageToAll(c *gin.Context, message []byte) {
 	connectionsLock.Lock()
 	defer connectionsLock.Unlock()
 
@@ -38,8 +38,12 @@ func SendMessageToAll(message []byte) {
 		err := conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			removeConnection(id)
+			c.JSON(http.StatusInternalServerError, gin.H{"Message": "Failed to send chat"})
+			return
 		}
 	}
+
+	c.JSON(http.StatusOK, gin.H{"Message": "Message received and saved successfully"})
 }
 
 func HandleNewWebsocket(c *gin.Context) {

@@ -9,3 +9,9 @@ type ChatList struct {
 	MessageType	 string     `json:"messageType"`
     CountUnread  int        `json:"countUnread"`
 }
+
+type Chatroom struct {
+    ChatroomID      int     `json:"ChatroomID"`
+    CustomerPhone   string  `json:"CustomerPhone"`
+    CustomerName    string  `json:"CustomerName"`
+}

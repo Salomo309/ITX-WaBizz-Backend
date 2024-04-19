@@ -23,6 +23,7 @@ func ConfigureRouter(router *gin.Engine) {
 
 	// Chat Endpoints
 	apis.GET("/chatroom", handlers.HandleGetChatroom)
+	apis.GET("/chatroom/websocket", handlers.HandleNewWebsocket)
 	apis.POST("/chatroom/send", handlers.HandleSendMessage)
 	apis.POST("/chatroom/receive", handlers.HandleReceiveMessage)
 

@@ -12,7 +12,6 @@ var (
 	Db *sql.DB
 	UserRepo *MySQLUserRepository
 	ChatlistRepo *MySQLChatListRepository
-	RefreshTokenRepo *MySQLRefreshTokenRepository
 )
 
 func InitDatabaseConnection() {
@@ -39,10 +38,4 @@ func InitRepositories() {
 	if err != nil {
 		log.Fatal("Error initiating repositories" + err.Error())
 	}
-
-	RefreshTokenRepo, err = NewMySQLRefreshTokenRepository(Db)
-	if err != nil {
-		log.Fatal("Error initiating repositories" + err.Error())
-	}
-
 }

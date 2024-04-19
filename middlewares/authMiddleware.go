@@ -1,10 +1,11 @@
 package middlewares
 
 import (
-	"encoding/json"
-	"github.com/gin-gonic/gin"
+	"itx-wabizz/repositories"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func VerifyTokenMiddleware() gin.HandlerFunc {
@@ -23,34 +24,14 @@ func VerifyTokenMiddleware() gin.HandlerFunc {
 		}
 
 		// Get authorization token and ask its validity with Google API
-		token := strings.TrimPrefix(authHeader, "Bearer ")
-
-		res, err := http.Get("https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + token)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error": "Failed to get response"})
-			return
-		}
-		defer res.Body.Close()
-
-		// Decode Google response
-		var response map[string]interface{}
-		err = json.NewDecoder(res.Body).Decode(&response)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error": "Failed to decode response"})
-			return
-		}
-
-		// Check for error in Google response
-		if _, ok := response["error_description"]; ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error": "Token verification failed"})
-			return
-		}
+		email := strings.TrimPrefix(authHeader, "Bearer ")
+		_, err := repositories.UserRepo.GetUser(email)
 
 		// Go to next handler if token valid, if not then abort
-		if _, ok := response["sub"]; ok {
+		if err == nil{
 			c.Next()
 		} else {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error": "Invalid token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error": "Email not found"})
 			return
 		}
 	}

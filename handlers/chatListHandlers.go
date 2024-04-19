@@ -26,6 +26,7 @@ func HandleChatlistSearchByContact(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{
             "error": "Query parameter 'query' is missing",
         })
+		return
     }
 	chatlists, err := repositories.ChatlistRepo.SearchChatListByContact(queryParam)
 	if err != nil {
@@ -43,6 +44,7 @@ func HandleChatlistSearchByMessage(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{
             "error": "Query parameter 'query' is missing",
         })
+		return
     }
 	chatlists, err := repositories.ChatlistRepo.SearchChatListByMessage(queryParam)
 	if err != nil {

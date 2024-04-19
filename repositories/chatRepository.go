@@ -19,7 +19,7 @@ type MySQLChatRepository struct {
 
 func NewMySQLChatRepository(db *sql.DB) (*MySQLChatRepository, error) {
 	// Prepare SQL statements
-	createStmt, err := db.Prepare("INSERT INTO Chat (chatroomId, timendate, isRead, content) VALUES (?, ?, ?, ?)")
+	createStmt, err := db.Prepare("INSERT INTO Chat (chat_id, email, chatroom_id, timendate, isRead, statusRead, content, messageType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		fmt.Println("Error preparing create statement:", err)
 		return nil, err
@@ -39,7 +39,7 @@ func NewMySQLChatRepository(db *sql.DB) (*MySQLChatRepository, error) {
 }
 
 func (repo *MySQLChatRepository) CreateChat(chat *models.Chat) error {
-	_, err := repo.createStmt.Exec(chat.ChatroomID, chat.Timendate, chat.IsRead, chat.Content)
+	_, err := repo.createStmt.Exec(&chat.ChatID, &chat.Email, &chat.ChatroomID, &chat.Timendate, &chat.IsRead, &chat.StatusRead, &chat.Content, &chat.MessageType)
 	if err != nil {
 		fmt.Println("Error executing create statement:", err)
 		return err
@@ -64,7 +64,7 @@ func (repo *MySQLChatRepository) GetChats(chatroomID int) ([]models.Chat, error)
 		}
 		chats = append(chats, chat)
 	}
-	
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}

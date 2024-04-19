@@ -2,7 +2,7 @@ package models
 
 type Chat struct {
 	ChatID		 int		`json:"ChatID"`
-	Email		 string		`json:"Email"`
+	Email		 *string	`json:"Email"`
 	ChatroomID	 int 		`json:"ChatroomID"`
 	Timendate	 string 	`json:"Timendate"`
 	IsRead		 *string	`json:"IsRead"`

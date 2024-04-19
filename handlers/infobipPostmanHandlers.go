@@ -40,12 +40,14 @@ func HandlerSendMessage(c *gin.Context) {
 		return
 	}
 
+	currentTime := time.Now().Format(time.RFC3339)
+
 	// Buat struktur Chat dari pesan yang diterima
 	chat := models.Chat{
 		ChatId:     message.MessageID,
-		ChatroomId: message.To, // Anda mungkin perlu menyesuaikan ini sesuai dengan struktur model Chat Anda
-		Timendate:  "",         // Atur tanggal dan waktu jika diperlukan
-		IsRead:     "",         // Setel status baca ke nilai default
+		ChatroomId: message.To,
+		Timendate:  currentTime,
+		IsRead:     "",
 		Content:    message.Content.Text,
 	}
 

@@ -42,25 +42,11 @@ func HandleSendMessage(c *gin.Context) {
 		return
 	}
 
-	// Check if chatroomID is provided
-	chatroomIDStr := c.Query("chatroomID")
-	if chatroomIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter 'chatroomID' is missing"})
-		return
-	}
-
-	// Parse chatroomID to int
-	chatroomID, err := strconv.Atoi(chatroomIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid chatroomID"})
-		return
-	}
-
 	// Create Chat object
 	chat := &models.Chat{
 		ChatID:		0,
 		Email:      chatMessage.Email,
-		ChatroomID: chatroomID,
+		ChatroomID: chatMessage.ChatroomID,
 		Timendate:  chatMessage.Timendate,
 		IsRead:     chatMessage.IsRead,
 		Content:    chatMessage.Content,

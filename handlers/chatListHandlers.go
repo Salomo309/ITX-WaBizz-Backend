@@ -20,11 +20,11 @@ func HandleChatlist(c *gin.Context) {
 
 func HandleChatlistSearchByContact(c *gin.Context) {
 	var chatlists []models.ChatList
-	queryParam := c.Query("query")
+	queryParam := c.Query("keyword")
 	if queryParam == "" {
         // If query parameter is not present
         c.JSON(http.StatusBadRequest, gin.H{
-            "error": "Query parameter 'query' is missing",
+            "error": "Query parameter 'keyword' is missing",
         })
 		return
     }
@@ -37,12 +37,12 @@ func HandleChatlistSearchByContact(c *gin.Context) {
 }
 
 func HandleChatlistSearchByMessage(c *gin.Context) {
-	var chatlists []models.ChatList
-	queryParam := c.Query("query")
+	var chatlists []models.MessageSearchResult
+	queryParam := c.Query("keyword")
 	if queryParam == "" {
         // If query parameter is not present
         c.JSON(http.StatusBadRequest, gin.H{
-            "error": "Query parameter 'query' is missing",
+            "error": "Query parameter 'keyword' is missing",
         })
 		return
     }

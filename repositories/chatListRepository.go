@@ -10,7 +10,7 @@ import (
 type ChatListRepository interface {
 	GetChatList() ([]models.ChatList, error)
 	SearchChatListByContact(string) ([]models.ChatList, error)
-	SearchChatListByMessage(string) ([]models.ChatList, error)
+	SearchChatListByMessage(string) ([]models.MessageSearchResult, error)
 	Insert(*models.Chatroom) error
 	GetChatroomByPhone(string) (*models.Chatroom, error) 
 	GetChatroomByID(int) (*models.Chatroom, error)
@@ -135,7 +135,7 @@ func (repo *MySQLChatListRepository) SearchChatListByContact(searchText string) 
 		WHERE
 			RowNum = 1 AND CustomerName LIKE CONCAT('%', ?, '%')
     `
-    rows, err := repo.db.Query(query, "%"+searchText+"%", "%"+searchText+"%", "%"+searchText+"%")
+    rows, err := repo.db.Query(query, searchText)
     if err != nil {
         return nil, err
     }
@@ -161,36 +161,34 @@ func (repo *MySQLChatListRepository) SearchChatListByContact(searchText string) 
 	return chatlists, nil
 }
 
-func (repo *MySQLChatListRepository) SearchChatListByMessage(searchText string) ([]models.ChatList, error){
+func (repo *MySQLChatListRepository) SearchChatListByMessage(searchText string) ([]models.MessageSearchResult, error){
 	query := `
 		SELECT CustomerName, Timendate, Content
 		FROM (
 			SELECT
 				Chatroom.customer_name AS CustomerName,
-				COALESCE(Chat.timendate, Reply.timendate) AS Timendate,
-				COALESCE(Chat.content, Reply.content) AS Content,
-				ROW_NUMBER() OVER (PARTITION BY Chatroom.chatroom_id ORDER BY COALESCE(Chat.timendate, Reply.timendate) DESC) AS RowNum
+				Chat.timendate AS Timendate,
+				Chat.content AS Content,
+				ROW_NUMBER() OVER (PARTITION BY Chatroom.chatroom_id ORDER BY Chat.timendate DESC) AS RowNum
 			FROM
 				Chatroom
 			LEFT JOIN Chat ON Chatroom.chatroom_id = Chat.chatroom_id
-			LEFT JOIN Reply ON Chatroom.chatroom_id = Reply.chatroom_id
 			WHERE
-				Chat.content LIKE CONCAT('%', ?, '%') OR
-				Reply.content LIKE CONCAT('%', ?, '%')
+				Chat.content LIKE CONCAT('%', ?, '%')
 		) AS Subquery
 		WHERE RowNum = 1
     `
-    rows, err := repo.db.Query(query, "%"+searchText+"%", "%"+searchText+"%", "%"+searchText+"%")
+    rows, err := repo.db.Query(query, searchText)
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
-	var chatlists []models.ChatList
+	var chatlists []models.MessageSearchResult
 
 	for rows.Next() {
-		var chatlist models.ChatList
-		err := rows.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.IsRead, &chatlist.StatusRead, &chatlist.Content, &chatlist.MessageType, &chatlist.CountUnread)
+		var chatlist models.MessageSearchResult
+		err := rows.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.Content)
 		if err != nil {
 			fmt.Println("Error rows:", err)
 			return nil, err

@@ -10,6 +10,12 @@ type ChatList struct {
     CountUnread  int        `json:"countUnread"`
 }
 
+type MessageSearchResult struct {
+	CustomerName string     `json:"customerName"`
+    Timendate    string     `json:"timendate"`
+    Content      string     `json:"content"`
+}
+
 type Chatroom struct {
     ChatroomID      int     `json:"ChatroomID"`
     CustomerPhone   string  `json:"CustomerPhone"`

@@ -16,17 +16,17 @@ type UserRepository interface {
 type MySQLUserRepository struct {
 	db                    *sql.DB
 	insertStmt            *sql.Stmt
-	getUserByGoogleIDStmt *sql.Stmt
+	getUserStmt           *sql.Stmt
 }
 
 // Function to create new user repository
 func NewMySQLUserRepository(db *sql.DB) (*MySQLUserRepository, error) {
-	insertStmt, err := db.Prepare("INSERT INTO Users (google_id, email, name, picture, admin) VALUES (?, ?, ?, ?, ?)")
+	insertStmt, err := db.Prepare("INSERT INTO Users (email, is_active) VALUES (?, ?)")
 	if err != nil {
 		return nil, err
 	}
 
-	getUserByGoogleIDStmt, err := db.Prepare("SELECT user_id, google_id, email, name, picture, admin FROM Users WHERE google_id = ?")
+	getUserStmt, err := db.Prepare("SELECT email, is_active FROM Users WHERE email = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -34,29 +34,25 @@ func NewMySQLUserRepository(db *sql.DB) (*MySQLUserRepository, error) {
 	return &MySQLUserRepository{
 		db:                    db,
 		insertStmt:            insertStmt,
-		getUserByGoogleIDStmt: getUserByGoogleIDStmt,
+		getUserStmt: 		   getUserStmt,
 	}, nil
 }
 
 // Function to insert new user into database
 func (repo *MySQLUserRepository) Insert(user *models.User) error {
-	_, err := repo.insertStmt.Exec(user.Google_ID, user.Email, user.Name, user.Picture, user.Admin)
+	_, err := repo.insertStmt.Exec(user.Email, user.IsActive)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Function to get user based on the Google ID
-func (repo *MySQLUserRepository) GetUserByGoogleID(googleID string) (*models.User, error) {
-	row := repo.getUserByGoogleIDStmt.QueryRow(googleID)
+func (repo *MySQLUserRepository) GetUser(email string) (*models.User, error) {
+	row := repo.getUserStmt.QueryRow(email)
 
 	var user models.User
-	err := row.Scan(&user.User_ID, &user.Google_ID, &user.Email, &user.Name, &user.Picture, &user.Admin)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
+	err := row.Scan(&user.Email, &user.IsActive)
+	if (err != nil) {
 		return nil, err
 	}
 

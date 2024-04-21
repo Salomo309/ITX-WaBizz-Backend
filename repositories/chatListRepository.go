@@ -3,16 +3,25 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
+
 	"itx-wabizz/models"
 )
 
 type ChatListRepository interface {
 	GetChatList() ([]models.ChatList, error)
+	SearchChatListByContact(string) ([]models.ChatList, error)
+	SearchChatListByMessage(string) ([]models.MessageSearchResult, error)
+	Insert(*models.Chatroom) error
+	GetChatroomByPhone(string) (*models.Chatroom, error) 
+	GetChatroomByID(int) (*models.Chatroom, error)
 }
 
 type MySQLChatListRepository struct {
-	db				*sql.DB
-	getChatListStmt	*sql.Stmt
+	db						*sql.DB
+	getChatListStmt			*sql.Stmt
+	insertStmt				*sql.Stmt
+	getChatroomByPhoneStmt	*sql.Stmt
+	getChatroomByIDStmt		*sql.Stmt
 }
 
 func NewMySQLChatListRepository(db *sql.DB) (*MySQLChatListRepository, error){
@@ -50,9 +59,27 @@ WHERE
 		return nil, err
 	}
 
+	insertStmt, err := db.Prepare("INSERT INTO Chatroom (customer_phone, customer_name) values (?, ?)")
+	if err != nil {
+		return nil, err
+	}
+
+	getChatroomByPhoneStmt, err := db.Prepare("SELECT chatroom_id, customer_phone, customer_name FROM Chatroom WHERE customer_phone = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	getChatroomByIDStmt, err := db.Prepare("SELECT chatroom_id, customer_phone, customer_name FROM Chatroom WHERE chatroom_id = ?")
+	if err != nil {
+		return nil, err
+	}
+
 	return &MySQLChatListRepository{
-		db:				db,
-		getChatListStmt:getChatListStmt,
+		db:						db,
+		getChatListStmt:		getChatListStmt,
+		insertStmt: 			insertStmt,
+		getChatroomByPhoneStmt: getChatroomByPhoneStmt,
+		getChatroomByIDStmt: 	getChatroomByIDStmt,
 	}, nil
 }
 
@@ -83,7 +110,7 @@ func (repo *MySQLChatListRepository) GetChatList() ([]models.ChatList, error){
 	return chatlists, nil
 }
 
-func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText string) ([]models.ChatList, error){
+func (repo *MySQLChatListRepository) SearchChatListByContact(searchText string) ([]models.ChatList, error){
 	query := `
 		SELECT CustomerName, Timendate,	IsRead,	StatusRead, Content, MessageType, CountUnread
 		FROM (
@@ -108,7 +135,7 @@ func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText strin
 		WHERE
 			RowNum = 1 AND CustomerName LIKE CONCAT('%', ?, '%')
     `
-    rows, err := repo.db.Query(query, "%"+searchText+"%", "%"+searchText+"%", "%"+searchText+"%")
+    rows, err := repo.db.Query(query, searchText)
     if err != nil {
         return nil, err
     }
@@ -134,36 +161,34 @@ func (repo *MySQLChatListRepository) SearchChatListByContact() (searchText strin
 	return chatlists, nil
 }
 
-func (repo *MySQLChatListRepository) SearchChatListByMessage() (searchText string) ([]models.ChatList, error){
+func (repo *MySQLChatListRepository) SearchChatListByMessage(searchText string) ([]models.MessageSearchResult, error){
 	query := `
 		SELECT CustomerName, Timendate, Content
 		FROM (
 			SELECT
 				Chatroom.customer_name AS CustomerName,
-				COALESCE(Chat.timendate, Reply.timendate) AS Timendate,
-				COALESCE(Chat.content, Reply.content) AS Content,
-				ROW_NUMBER() OVER (PARTITION BY Chatroom.chatroom_id ORDER BY COALESCE(Chat.timendate, Reply.timendate) DESC) AS RowNum
+				Chat.timendate AS Timendate,
+				Chat.content AS Content,
+				ROW_NUMBER() OVER (PARTITION BY Chatroom.chatroom_id ORDER BY Chat.timendate DESC) AS RowNum
 			FROM
 				Chatroom
 			LEFT JOIN Chat ON Chatroom.chatroom_id = Chat.chatroom_id
-			LEFT JOIN Reply ON Chatroom.chatroom_id = Reply.chatroom_id
 			WHERE
-				Chat.content LIKE CONCAT('%', ?, '%') OR
-				Reply.content LIKE CONCAT('%', ?, '%')
+				Chat.content LIKE CONCAT('%', ?, '%')
 		) AS Subquery
 		WHERE RowNum = 1
     `
-    rows, err := repo.db.Query(query, "%"+searchText+"%", "%"+searchText+"%", "%"+searchText+"%")
+    rows, err := repo.db.Query(query, searchText)
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
-	var chatlists []models.ChatList
+	var chatlists []models.MessageSearchResult
 
 	for rows.Next() {
-		var chatlist models.ChatList
-		err := rows.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.IsRead, &chatlist.StatusRead, &chatlist.Content, &chatlist.MessageType, &chatlist.CountUnread)
+		var chatlist models.MessageSearchResult
+		err := rows.Scan(&chatlist.CustomerName, &chatlist.Timendate, &chatlist.Content)
 		if err != nil {
 			fmt.Println("Error rows:", err)
 			return nil, err
@@ -177,4 +202,39 @@ func (repo *MySQLChatListRepository) SearchChatListByMessage() (searchText strin
 	}
 
 	return chatlists, nil
+}
+
+func (repo *MySQLChatListRepository) Insert(chatroom *models.Chatroom) error {
+	_, err := repo.insertStmt.Exec(chatroom.CustomerPhone, chatroom.CustomerName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *MySQLChatListRepository) GetChatroomByPhone(customerPhone string) (*models.Chatroom, error) {
+	row := repo.getChatroomByPhoneStmt.QueryRow(customerPhone)
+
+	var chatroom models.Chatroom
+	err := row.Scan(&chatroom.ChatroomID, &chatroom.CustomerPhone, &chatroom.CustomerName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &chatroom, nil
+}
+
+func (repo *MySQLChatListRepository) GetChatroomByID(chatroomID int) (*models.Chatroom, error) {
+	row := repo.getChatroomByIDStmt.QueryRow(chatroomID)
+
+	var chatroom models.Chatroom
+	err := row.Scan(&chatroom.ChatroomID, &chatroom.CustomerPhone, &chatroom.CustomerName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &chatroom, nil
 }

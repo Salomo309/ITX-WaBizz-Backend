@@ -30,6 +30,12 @@ func ConfigureRouter(router *gin.Engine) {
 	apis.POST("/chatroom/send", handlers.HandleSendMessage)
 	apis.POST("/chatroom/receive", handlers.HandleReceiveMessage)
 
+	// User endpoints
+	apis.POST("/user/insert", handlers.HandleInsertUser)
+	apis.GET("/user/info", handlers.HandleUser)
+	apis.GET("/user/all", handlers.HandleGetAllUser)
+	apis.GET("/user/active", handlers.HandleMakeActive)
+	apis.GET("/user/inactive", handlers.HandleMakeInactive)
 }
 
 func applyCorsMiddleware(router *gin.Engine) {

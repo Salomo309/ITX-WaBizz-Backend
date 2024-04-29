@@ -16,6 +16,9 @@ func ConfigureRouter(router *gin.Engine) {
 	router.GET("/api", handlers.HelloHandler)
 	apis := router.Group("/api")
 
+	// Auth endpoints
+	apis.POST("/login", handlers.HandleCheckUserLogin)
+	
 	// Chatlist endpoints
 	apis.GET("/chatlist", handlers.HandleChatlist)
 	apis.GET("/chatlist/search/contact", handlers.HandleChatlistSearchByContact)

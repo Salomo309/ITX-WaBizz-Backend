@@ -26,6 +26,12 @@ func HandleGetChatroom(c *gin.Context) {
 		return
 	}
 
+	// Mark all chats in the chatroom as read
+	if err := repositories.ChatRepo.MarkAllChatsAsRead(intChatroomID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to mark all chats as read"})
+		return
+	}
+
 	var chats []models.Chat
 	chats, err = repositories.ChatRepo.GetChats(intChatroomID)
 	if err != nil {

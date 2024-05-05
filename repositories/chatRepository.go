@@ -71,3 +71,12 @@ func (repo *MySQLChatRepository) GetChats(chatroomID int) ([]models.Chat, error)
 
 	return chats, nil
 }
+
+func (repo *MySQLChatRepository) MarkAllChatsAsRead(chatroomID int) error {
+	_, err := repo.db.Exec("UPDATE Chat SET isRead = ? WHERE chatroom_id = ? AND isRead = ?", "1", chatroomID, "0")
+	if err != nil {
+		fmt.Println("Error executing update statement:", err)
+		return err
+	}
+	return nil
+}

@@ -28,6 +28,7 @@ INSERT INTO Chatroom VALUES (NULL,'08183920340','Aldo');
 INSERT INTO Users VALUES ('asep@gmail.com', True);
 INSERT INTO Users VALUES ('gabrielpardosi26@gmail.com', True);
 INSERT INTO Users VALUES ('13521059@std.stei.itb.ac.id', True);
+INSERT INTO Users VALUES ('13521051@std.stei.itb.ac.id', True);
 INSERT INTO Users VALUES ('margarethaolivia21@gmail.com', True);
 INSERT INTO Users VALUES ('bakti@gmail.com', False);
 INSERT INTO Chat VALUES (NULL,'asep@gmail.com',1,'2024-03-07 13:00:00', NULL, 'read', 'Sudah diterima', 'text');

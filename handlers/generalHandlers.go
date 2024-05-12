@@ -1,10 +1,15 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"fmt"
+	"github.com/gin-gonic/gin"
 )
 
-func HelloHandler(c *gin.Context) {
+/*
+Function: Welcome
+
+For testing purpose and see if server can be reached or not
+*/
+func Welcome(c *gin.Context) {
 	fmt.Fprintf(c.Writer, "Hello, Welcome to ITX WABizz Web Service!")
 }

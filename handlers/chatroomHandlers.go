@@ -6,20 +6,28 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
 	"github.com/gin-gonic/gin"
 
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
 )
 
-func HandleGetChatroom(c *gin.Context) {
+/*
+Function: GetChatroom
+
+Retrieve all chats of a spesific chatroom
+*/
+func GetChatroom(c *gin.Context) {
+	// Find chatroom ID in query parameter.
 	chatroomID := c.Query("chatroomID")
+
+	// If query parameter is not present, deny the request.
 	if chatroomID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Query parameter 'chatroomID' is missing"})
 		return
 	}
 
+	// Parse query parameter into integer
 	intChatroomID, err := strconv.Atoi(chatroomID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Query parameter 'chatroomID' is not a number"})
@@ -32,13 +40,15 @@ func HandleGetChatroom(c *gin.Context) {
 		return
 	}
 
+	// Retrieve the chats of that chatroom
 	var chats []models.Chat
 	chats, err = repositories.ChatRepo.GetChats(intChatroomID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chats information"})
 		return
 	}
-
+	
+	// Send information back as response
 	c.JSON(http.StatusOK, gin.H{"Chats": chats})
 }
 

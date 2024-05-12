@@ -9,10 +9,10 @@ import (
 
 var (
 	// Database connection and important repositories that are needed throught app lifetime
-	Db *sql.DB
-	UserRepo *MySQLUserRepository
-	ChatlistRepo *MySQLChatListRepository
-	ChatRepo *MySQLChatRepository
+	Db           *sql.DB
+	UserRepo     UserRepository
+	ChatlistRepo ChatroomRepository
+	ChatRepo     ChatRepository
 )
 
 func InitDatabaseConnection() {
@@ -30,17 +30,17 @@ func InitDatabaseConnection() {
 
 func InitRepositories() {
 	var err error
-	UserRepo, err = NewMySQLUserRepository(Db)
+	UserRepo, err = NewUserRepository(Db)
 	if err != nil {
 		log.Fatal("Error initiating repositories: " + err.Error())
 	}
 
-	ChatlistRepo, err = NewMySQLChatListRepository(Db)
+	ChatlistRepo, err = NewChatroomRepository(Db)
 	if err != nil {
 		log.Fatal("Error initiating repositories: " + err.Error())
 	}
 
-	ChatRepo, err = NewMySQLChatRepository(Db)
+	ChatRepo, err = NewChatRepository(Db)
 	if err != nil {
 		log.Fatal("Error initiating repositories: ")
 	}

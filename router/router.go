@@ -12,30 +12,30 @@ func ConfigureRouter(router *gin.Engine) {
 	applyCorsMiddleware(router)
 
 	// Define endpoints for back-end services
-	// General handler
-	router.GET("/api", handlers.HelloHandler)
+	// General endpoints
+	router.GET("/api", handlers.Welcome)
 	apis := router.Group("/api")
 
 	// Auth endpoints
-	apis.POST("/login", handlers.HandleCheckUserLogin)
-	
+	apis.POST("/login", handlers.CheckUserLogin)
+
 	// Chatlist endpoints
-	apis.GET("/chatlist", handlers.HandleChatlist)
-	apis.GET("/chatlist/search/contact", handlers.HandleChatlistSearchByContact)
-	apis.GET("/chatlist/search/message", handlers.HandleChatlistSearchByMessage)
+	apis.GET("/chatlist", handlers.GetChatroomList)
+	apis.GET("/chatlist/search/contact", handlers.SearchChatroomByContact)
+	apis.GET("/chatlist/search/message", handlers.SearchChatroomByMessage)
 
 	// Chat Endpoints
-	apis.GET("/chatroom", handlers.HandleGetChatroom)
+	apis.GET("/chatroom", handlers.GetChatroom)
 	apis.GET("/chatroom/websocket", handlers.HandleNewWebsocket)
 	apis.POST("/chatroom/send", handlers.HandleSendMessage)
 	apis.POST("/chatroom/receive", handlers.HandleReceiveMessage)
 
 	// User endpoints
-	apis.POST("/user/insert", handlers.HandleInsertUser)
-	apis.GET("/user/info", handlers.HandleUser)
-	apis.GET("/user/all", handlers.HandleGetAllUser)
-	apis.GET("/user/active", handlers.HandleMakeActive)
-	apis.GET("/user/inactive", handlers.HandleMakeInactive)
+	apis.POST("/user/insert", handlers.InsertUser)
+	apis.GET("/user/info", handlers.GetUserInfo)
+	apis.GET("/user/all", handlers.GetAllUserInfo)
+	apis.GET("/user/active", handlers.MakeUserActive)
+	apis.GET("/user/inactive", handlers.MakeUserInactive)
 }
 
 func applyCorsMiddleware(router *gin.Engine) {

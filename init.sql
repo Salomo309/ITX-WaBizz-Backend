@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS Users (
     email VARCHAR(255) NOT NULL PRIMARY KEY,
-    is_active BOOLEAN NOT NULL
+    is_active BOOLEAN NOT NULL,
+    is_admin BOOLEAN NOT NULL,
+    device_token VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Chatroom (
@@ -25,8 +27,8 @@ CREATE TABLE IF NOT EXISTS Chat (
 INSERT INTO Chatroom VALUES (NULL,'08141341134','Budiono');
 INSERT INTO Chatroom VALUES (NULL,'08983517193','Vivi');
 INSERT INTO Chatroom VALUES (NULL,'08183920340','Aldo');
-INSERT INTO Users VALUES ('asep@gmail.com', True);
-INSERT INTO Users VALUES ('bakti@gmail.com', False);
+INSERT INTO Users VALUES ('asep@gmail.com', True, False, "");
+INSERT INTO Users VALUES ('bakti@gmail.com', False, False, "");
 INSERT INTO Chat VALUES (NULL,'asep@gmail.com',1,'2024-03-07 13:00:00', NULL, 'read', 'Sudah diterima', 'text');
 INSERT INTO Chat VALUES (NULL,NULL,1,'2024-03-07 13:01:00', '0', NULL, 'Ok', 'text');
 INSERT INTO Chat VALUES (NULL,NULL,1,'2024-03-07 13:01:00', '0', NULL, 'Terima kasih', 'text');

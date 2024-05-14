@@ -47,7 +47,7 @@ func GetChatroom(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chats information"})
 		return
 	}
-	
+
 	// Send information back as response
 	c.JSON(http.StatusOK, gin.H{"Chats": chats})
 }
@@ -60,11 +60,39 @@ func HandleSendMessage(c *gin.Context) {
 		return
 	}
 
-	// Insert chat message into database
-	if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
-		return
+	// Check message type and content validity
+	if chat.MessageType == "text"{
+
+		if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
+			return
+		}
+
+	} else {
+		if chat.MessageType == "photo" ||  chat.MessageType == "video" || chat.MessageType == "file" {
+
+			// Save file and get the file path
+			filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+				return
+			}
+
+			chat.Content = filepath;
+
+			// Insert chat (text type) message into database
+			if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
+				return
+			}
+		}
 	}
+
+	// Insert chat message into database
+	// if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
+	// 	return
+	// }
 
 	existingChatroom, err := repositories.ChatlistRepo.GetChatroomByID(chat.ChatroomID)
 	if err != nil {
@@ -95,7 +123,20 @@ func HandleSendMessage(c *gin.Context) {
 }
 
 func HandleReceiveMessage(c *gin.Context) {
-	var infobipMessage models.Message
+	// var infobipMessage models.Message
+	// if err := c.BindJSON(&infobipMessage); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
+	// 	return
+	// }
+
+	// customerPhone := infobipMessage.From
+	// existingChatroom, err := repositories.ChatlistRepo.GetChatroomByPhone(customerPhone)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chatroom information"})
+	// 	return
+	// }
+
+	var infobipMessage models.ReceivedMessage
 	if err := c.BindJSON(&infobipMessage); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
 		return
@@ -132,20 +173,106 @@ func HandleReceiveMessage(c *gin.Context) {
 	}
 
 	isRead := "0"
-	newChat := models.Chat{
-		ChatID:      0,
-		Email:       nil,
-		ChatroomID:  chatroomID,
-		Timendate:   time.Now().Format("2006-01-02 15:04:05"),
-		IsRead:      &isRead,
-		StatusRead:  nil,
-		Content:     infobipMessage.Content.Text,
-		MessageType: "text",
-	}
-	err = repositories.ChatRepo.CreateChat(&newChat)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
-		return
+	// newChat := models.Chat{
+	// 	ChatID:      0,
+	// 	Email:       nil,
+	// 	ChatroomID:  chatroomID,
+	// 	Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+	// 	IsRead:      &isRead,
+	// 	StatusRead:  nil,
+	// 	Content:     infobipMessage.Content.Text,
+	// 	MessageType: "text",
+	// }
+
+	if infobipMessage.Message.Type == "TEXT" {
+		newChat := models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Message.Text,
+			MessageType: "text",
+		}
+
+		err = repositories.ChatRepo.CreateChat(&newChat)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
+			return
+		}
+	} else if infobipMessage.Message.Type == "IMAGE" {
+		newChat := models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Message.URL,
+			MessageType: "photo",
+		}
+
+		// Save file and get the file path
+		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+			return
+		}
+
+		err = repositories.ChatRepo.CreateChat(&newChat)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
+			return
+		}
+	} else if infobipMessage.Message.Type == "VIDEO" {
+		newChat := models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Message.URL,
+			MessageType: "video",
+		}
+
+		// Save file and get the file path
+		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+			return
+		}
+
+		err = repositories.ChatRepo.CreateChat(&newChat)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
+			return
+		}
+	} else if infobipMessage.Message.Type == "DOCUMENT" {
+		newChat := models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Message.URL,
+			MessageType: "file",
+		}
+
+		// Save file and get the file path
+		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+			return
+		}
+
+		err = repositories.ChatRepo.CreateChat(&newChat)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
+			return
+		}
 	}
 
 	chatJSON, err := json.Marshal(newChat)

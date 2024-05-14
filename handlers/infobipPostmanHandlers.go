@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 	"github.com/gin-gonic/gin"
 
 	"itx-wabizz/models"
 )
 
 func HandleInfobipSend(c *gin.Context) {
-	receivedMessage := models.ReceivedMessage{
+	infobipMessage := models.ReceivedMessage{
 		Results: []models.Result{
 			{
 				From:            "0888-8888-8888",
@@ -21,7 +22,7 @@ func HandleInfobipSend(c *gin.Context) {
 				MessageID:       "AB09JC",
 				PairedMessageID: "XYZ123",
 				CallbackData:    "some-callback-data",
-				Message: models.MessageDetail{
+				Message: models.MessageContent{
 					Type: "TEXT",
 					Text: "Halo Selamat Pagi Dunia",
 				},

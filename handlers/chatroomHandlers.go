@@ -72,13 +72,13 @@ func HandleSendMessage(c *gin.Context) {
 		if chat.MessageType == "photo" ||  chat.MessageType == "video" || chat.MessageType == "file" {
 
 			// Save file and get the file path
-			filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+			filePath, err := SaveFile(c.Request.MultipartForm.File["file"][0].Open())
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
 				return
 			}
 
-			chat.Content = filepath;
+			chat.Content = filePath;
 
 			// Insert chat (text type) message into database
 			if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
@@ -142,7 +142,7 @@ func HandleReceiveMessage(c *gin.Context) {
 		return
 	}
 
-	customerPhone := infobipMessage.From
+	customerPhone := infobipMessage.Results[0].From
 	existingChatroom, err := repositories.ChatlistRepo.GetChatroomByPhone(customerPhone)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chatroom information"})
@@ -184,7 +184,7 @@ func HandleReceiveMessage(c *gin.Context) {
 	// 	MessageType: "text",
 	// }
 
-	if infobipMessage.Message.Type == "TEXT" {
+	if infobipMessage.Results[0].Message.Type == "TEXT" {
 		newChat := models.Chat{
 			ChatID:      0,
 			Email:       nil,
@@ -192,7 +192,7 @@ func HandleReceiveMessage(c *gin.Context) {
 			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
-			Content:     infobipMessage.Message.Text,
+			Content:     infobipMessage.Results[0].Message.Text,
 			MessageType: "text",
 		}
 
@@ -201,7 +201,7 @@ func HandleReceiveMessage(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
 			return
 		}
-	} else if infobipMessage.Message.Type == "IMAGE" {
+	} else if infobipMessage.Results[0].Message.Type == "IMAGE" {
 		newChat := models.Chat{
 			ChatID:      0,
 			Email:       nil,
@@ -209,23 +209,23 @@ func HandleReceiveMessage(c *gin.Context) {
 			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
-			Content:     infobipMessage.Message.URL,
+			Content:     infobipMessage.Results[0].Message.URL,
 			MessageType: "photo",
 		}
 
 		// Save file and get the file path
-		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
-			return
-		}
+		// filePath, err := SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+		// 	return
+		// }
 
 		err = repositories.ChatRepo.CreateChat(&newChat)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
 			return
 		}
-	} else if infobipMessage.Message.Type == "VIDEO" {
+	} else if infobipMessage.Results[0].Message.Type == "VIDEO" {
 		newChat := models.Chat{
 			ChatID:      0,
 			Email:       nil,
@@ -233,23 +233,23 @@ func HandleReceiveMessage(c *gin.Context) {
 			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
-			Content:     infobipMessage.Message.URL,
+			Content:     infobipMessage.Results[0].Message.URL,
 			MessageType: "video",
 		}
 
 		// Save file and get the file path
-		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
-			return
-		}
+		// filePath, err := SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+		// 	return
+		// }
 
 		err = repositories.ChatRepo.CreateChat(&newChat)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
 			return
 		}
-	} else if infobipMessage.Message.Type == "DOCUMENT" {
+	} else if infobipMessage.Results[0].Message.Type == "DOCUMENT" {
 		newChat := models.Chat{
 			ChatID:      0,
 			Email:       nil,
@@ -257,16 +257,16 @@ func HandleReceiveMessage(c *gin.Context) {
 			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
-			Content:     infobipMessage.Message.URL,
+			Content:     infobipMessage.Results[0].Message.URL,
 			MessageType: "file",
 		}
 
 		// Save file and get the file path
-		filePath, err := handlers.SaveFile(c.Request.MultipartForm.File["file"][0].Open())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
-			return
-		}
+		// filePath, err := SaveFile(c.Request.MultipartForm.File["file"][0].Open())
+		// if err != nil {
+		// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+		// 	return
+		// }
 
 		err = repositories.ChatRepo.CreateChat(&newChat)
 		if err != nil {

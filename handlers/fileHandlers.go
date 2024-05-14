@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"mime/multipart"
+	"path/filepath"
 )
 
 func SaveFile(fileHeader *multipart.FileHeader) (string, error) {

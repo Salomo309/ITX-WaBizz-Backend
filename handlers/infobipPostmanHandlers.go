@@ -5,32 +5,41 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 	"github.com/gin-gonic/gin"
 
 	"itx-wabizz/models"
 )
 
 func HandleInfobipSend(c *gin.Context) {
-	infobipMessage := models.Message{
-		From: "0888-8888-8888",
-		To:"0999-9999-9999",
-		MessageID: "AB09JC",
-		Content: models.Content{Text: "Halo Selamat Pagi Dunia"},
-		CallbackData: "",
-		NotifyURL: "",
-		URLOptions: models.URLOptions{
-			ShortenURL: true,
-			TrackClicks: true,
-			TrackingURL: "",
-			RemoveProtocol: true,
-			CustomDomain: "",
+	infobipMessage := models.ReceivedMessage{
+		Results: []models.Result{
+			{
+				From:            "0888-8888-8888",
+				To:              "0999-9999-9999",
+				IntegrationType: "API",
+				ReceivedAt:      time.Now(),
+				MessageID:       "AB09JC",
+				PairedMessageID: "XYZ123",
+				CallbackData:    "some-callback-data",
+				Message: models.MessageContent{
+					Type: "TEXT",
+					Text: "Halo Selamat Pagi Dunia",
+				},
+				Price: models.Price{
+					PricePerMessage: 0,
+					Currency:        "USD",
+				},
+			},
 		},
+		MessageCount:        1,
+		PendingMessageCount: 0,
 	}
 
 	requestBody, _ := json.Marshal(infobipMessage)
 	response, _ := http.Post("http://localhost:8080/api/chatroom/receive", "application/json", bytes.NewBuffer(requestBody))
 	defer response.Body.Close()
-	
+
 	var responseData map[string]interface{}
 	json.NewDecoder(response.Body).Decode(&responseData)
 	c.JSON(response.StatusCode, responseData)

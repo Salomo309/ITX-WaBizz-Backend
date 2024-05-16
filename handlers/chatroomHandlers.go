@@ -8,6 +8,8 @@ import (
 	"time"
 	"github.com/gin-gonic/gin"
 
+	// "os"
+
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
 )
@@ -47,23 +49,53 @@ func GetChatroom(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chats information"})
 		return
 	}
-	
+
 	// Send information back as response
 	c.JSON(http.StatusOK, gin.H{"Chats": chats})
 }
 
 func HandleSendMessage(c *gin.Context) {
+	chatJSON := c.PostForm("chatJSON")
+
 	// Bind request body to ChatMessage struct
 	var chat models.Chat
-	if err := c.BindJSON(&chat); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
+	if err := json.Unmarshal([]byte(chatJSON), &chat); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid JSON in form-data"})
 		return
 	}
 
-	// Insert chat message into database
-	if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
-		return
+	// Check message type and content validity
+	if chat.MessageType == "text"{
+
+		if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
+			return
+		}
+
+	} else {
+		if chat.MessageType == "photo" ||  chat.MessageType == "video" || chat.MessageType == "file" {
+
+			fileHeader, err := c.FormFile("file")
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"Error": "File is required"})
+				return
+			}
+
+			// Save file and get the file path
+			filePath, err := SaveFile(fileHeader)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+				return
+			}
+
+			chat.Content = filePath
+
+			// Insert chat (text type) message into database
+			if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
+				return
+			}
+		}
 	}
 
 	existingChatroom, err := repositories.ChatlistRepo.GetChatroomByID(chat.ChatroomID)
@@ -91,17 +123,30 @@ func HandleSendMessage(c *gin.Context) {
 	requestBody, _ := json.Marshal(infobipMessage)
 	http.Post("http://host.docker.internal:8081/receive", "application/json", bytes.NewBuffer(requestBody))
 
-	c.JSON(http.StatusOK, gin.H{"Message": "Message sent successfully"})
+	c.JSON(http.StatusOK, gin.H{"Message": chat})
 }
 
 func HandleReceiveMessage(c *gin.Context) {
-	var infobipMessage models.Message
+	// var infobipMessage models.Message
+	// if err := c.BindJSON(&infobipMessage); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
+	// 	return
+	// }
+
+	// customerPhone := infobipMessage.From
+	// existingChatroom, err := repositories.ChatlistRepo.GetChatroomByPhone(customerPhone)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chatroom information"})
+	// 	return
+	// }
+
+	var infobipMessage models.ReceivedMessage
 	if err := c.BindJSON(&infobipMessage); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
 		return
 	}
 
-	customerPhone := infobipMessage.From
+	customerPhone := infobipMessage.Results[0].From
 	existingChatroom, err := repositories.ChatlistRepo.GetChatroomByPhone(customerPhone)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chatroom information"})
@@ -132,16 +177,68 @@ func HandleReceiveMessage(c *gin.Context) {
 	}
 
 	isRead := "0"
-	newChat := models.Chat{
-		ChatID:      0,
-		Email:       nil,
-		ChatroomID:  chatroomID,
-		Timendate:   time.Now().Format("2006-01-02 15:04:05"),
-		IsRead:      &isRead,
-		StatusRead:  nil,
-		Content:     infobipMessage.Content.Text,
-		MessageType: "text",
+	var newChat models.Chat
+	// newChat := models.Chat{
+	// 	ChatID:      0,
+	// 	Email:       nil,
+	// 	ChatroomID:  chatroomID,
+	// 	Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+	// 	IsRead:      &isRead,
+	// 	StatusRead:  nil,
+	// 	Content:     infobipMessage.Content.Text,
+	// 	MessageType: "text",
+	// }
+
+	switch infobipMessage.Results[0].Message.Type {
+	case "TEXT":
+		newChat = models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Results[0].Message.Text,
+			MessageType: "text",
+		}
+	case "IMAGE":
+		newChat = models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Results[0].Message.URL,
+			MessageType: "photo",
+		}
+	case "VIDEO":
+		newChat = models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Results[0].Message.URL,
+			MessageType: "video",
+		}
+	case "DOCUMENT":
+		newChat = models.Chat{
+			ChatID:      0,
+			Email:       nil,
+			ChatroomID:  chatroomID,
+			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			IsRead:      &isRead,
+			StatusRead:  nil,
+			Content:     infobipMessage.Results[0].Message.URL,
+			MessageType: "file",
+		}
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Unsupported message type"})
+		return
 	}
+
 	err = repositories.ChatRepo.CreateChat(&newChat)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})

@@ -8,6 +8,8 @@ import (
 	"time"
 	"github.com/gin-gonic/gin"
 
+	// "os"
+
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
 )
@@ -53,10 +55,12 @@ func GetChatroom(c *gin.Context) {
 }
 
 func HandleSendMessage(c *gin.Context) {
+	chatJSON := c.PostForm("chatJSON")
+
 	// Bind request body to ChatMessage struct
 	var chat models.Chat
-	if err := c.BindJSON(&chat); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
+	if err := json.Unmarshal([]byte(chatJSON), &chat); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid JSON in form-data"})
 		return
 	}
 
@@ -84,7 +88,7 @@ func HandleSendMessage(c *gin.Context) {
 				return
 			}
 
-			chat.Content = filePath;
+			chat.Content = filePath
 
 			// Insert chat (text type) message into database
 			if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
@@ -93,12 +97,6 @@ func HandleSendMessage(c *gin.Context) {
 			}
 		}
 	}
-
-	// Insert chat message into database
-	// if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
-	// 	return
-	// }
 
 	existingChatroom, err := repositories.ChatlistRepo.GetChatroomByID(chat.ChatroomID)
 	if err != nil {
@@ -125,7 +123,7 @@ func HandleSendMessage(c *gin.Context) {
 	requestBody, _ := json.Marshal(infobipMessage)
 	http.Post("http://host.docker.internal:8081/receive", "application/json", bytes.NewBuffer(requestBody))
 
-	c.JSON(http.StatusOK, gin.H{"Message": "Message sent successfully"})
+	c.JSON(http.StatusOK, gin.H{"Message": chat})
 }
 
 func HandleReceiveMessage(c *gin.Context) {

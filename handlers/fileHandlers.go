@@ -21,8 +21,9 @@ func SaveFile(fileHeader *multipart.FileHeader) (string, error) {
 		return "", err
 	}
 
+	storageDir := "/./storage"
+
 	// Create the storage directory if it does not exist
-	storageDir := "storage"
 	if _, err := os.Stat(storageDir); os.IsNotExist(err) {
 		err = os.Mkdir(storageDir, os.ModePerm)
 		if err != nil {

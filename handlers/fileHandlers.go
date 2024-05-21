@@ -15,13 +15,7 @@ func SaveFile(fileHeader *multipart.FileHeader) (string, error) {
 	}
 	defer file.Close()
 
-	// Read the file's content
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		return "", err
-	}
-
-	storageDir := "/./storage"
+	storageDir := "../storage"
 
 	// Create the storage directory if it does not exist
 	if _, err := os.Stat(storageDir); os.IsNotExist(err) {
@@ -34,9 +28,18 @@ func SaveFile(fileHeader *multipart.FileHeader) (string, error) {
 	// Use the file's original filename
 	filename := fileHeader.Filename
 
-	// Write the file to the storage directory
+	// Define the file path
 	filePath := filepath.Join(storageDir, filename)
-	err = os.WriteFile(filePath, fileBytes, 0644)
+
+	// Create a new file in the storage directory
+	outFile, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer outFile.Close()
+
+	// Copy the uploaded file's content to the new file
+	_, err = io.Copy(outFile, file)
 	if err != nil {
 		return "", err
 	}

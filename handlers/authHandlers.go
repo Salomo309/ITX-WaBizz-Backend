@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"net/http"
 	"github.com/gin-gonic/gin"
+	"net/http"
 
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
@@ -40,13 +40,14 @@ func CheckUserLogin(c *gin.Context) {
 	} else {
 		// If active, store user device registration token and accept the user.
 
-		err = repositories.UserRepo.UpdateDeviceToken(loginRequest.DeviceToken, loginRequest.Email)
+		err = repositories.UserRepo.UpdateDeviceToken(loginRequest.Email, loginRequest.DeviceToken)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to check user login"})
+			return
 		}
-		
+
 		c.JSON(http.StatusOK, models.LoginResponse{
-			Message: "Authorized", 
+			Message: "Authorized",
 			IsAdmin: existingUser.IsAdmin})
 		return
 	}

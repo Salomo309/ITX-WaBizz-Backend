@@ -142,19 +142,6 @@ func HandleSendMessage(c *gin.Context) {
 }
 
 func HandleReceiveMessage(c *gin.Context) {
-	// var infobipMessage models.Message
-	// if err := c.BindJSON(&infobipMessage); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
-	// 	return
-	// }
-
-	// customerPhone := infobipMessage.From
-	// existingChatroom, err := repositories.ChatlistRepo.GetChatroomByPhone(customerPhone)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to retrieve chatroom information"})
-	// 	return
-	// }
-
 	var infobipMessage models.ReceivedMessage
 	if err := c.BindJSON(&infobipMessage); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid request body"})
@@ -193,16 +180,6 @@ func HandleReceiveMessage(c *gin.Context) {
 
 	isRead := "0"
 	var newChat models.Chat
-	// newChat := models.Chat{
-	// 	ChatID:      0,
-	// 	Email:       nil,
-	// 	ChatroomID:  chatroomID,
-	// 	Timendate:   time.Now().Format("2006-01-02 15:04:05"),
-	// 	IsRead:      &isRead,
-	// 	StatusRead:  nil,
-	// 	Content:     infobipMessage.Content.Text,
-	// 	MessageType: "text",
-	// }
 
 	switch infobipMessage.Results[0].Message.Type {
 	case "TEXT":
@@ -216,29 +193,28 @@ func HandleReceiveMessage(c *gin.Context) {
 			Content:     infobipMessage.Results[0].Message.Text,
 			MessageType: "text",
 		}
-	case "IMAGE":
-		newChat = models.Chat{
-			ChatID:      0,
-			Email:       nil,
-			ChatroomID:  chatroomID,
-			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
-			IsRead:      &isRead,
-			StatusRead:  nil,
-			Content:     infobipMessage.Results[0].Message.URL,
-			MessageType: "photo",
+	case "IMAGE", "VIDEO", "DOCUMENT":
+		// Download the file from the URL
+		fileHeader, err := downloadFile(infobipMessage.Results[0].Message.URL)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to download file"})
+			return
 		}
-	case "VIDEO":
-		newChat = models.Chat{
-			ChatID:      0,
-			Email:       nil,
-			ChatroomID:  chatroomID,
-			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
-			IsRead:      &isRead,
-			StatusRead:  nil,
-			Content:     infobipMessage.Results[0].Message.URL,
-			MessageType: "video",
+
+		// Save the downloaded file
+		filePath, err := SaveFile(fileHeader)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
+			return
 		}
-	case "DOCUMENT":
+
+		messageType := "file"
+		if infobipMessage.Results[0].Message.Type == "IMAGE" {
+			messageType = "photo"
+		} else if infobipMessage.Results[0].Message.Type == "VIDEO" {
+			messageType = "video"
+		}
+
 		newChat = models.Chat{
 			ChatID:      0,
 			Email:       nil,
@@ -246,13 +222,14 @@ func HandleReceiveMessage(c *gin.Context) {
 			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
-			Content:     infobipMessage.Results[0].Message.URL,
-			MessageType: "file",
+			Content:     filePath,
+			MessageType: messageType,
 		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Unsupported message type"})
 		return
 	}
+
 
 	err = repositories.ChatRepo.CreateChat(&newChat)
 	if err != nil {

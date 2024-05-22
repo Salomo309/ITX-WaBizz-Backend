@@ -240,22 +240,22 @@ func HandleReceiveMessage(c *gin.Context) {
 
 	deviceTokens, err := repositories.UserRepo.GetDeviceTokens()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"ErrorA": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send notifications"})
 		return
 	}
 
 	if deviceTokens != nil {
 		msg := &messaging.MulticastMessage{
-			Tokens: []string{},
+			Tokens: deviceTokens,
 			Notification: &messaging.Notification{
-				Title: "A",
-				Body:  "A",
+				Title: "New Message",
+				Body:  "Message received from" + infobipMessage.Results[0].From,
 			},
 		}
 
 		response, err := FirebaseClient.SendMulticast(context.Background(), msg)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"ErrorB": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send notifications"})
 			return
 		}
 

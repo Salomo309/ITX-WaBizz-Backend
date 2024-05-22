@@ -8,7 +8,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 
-	"itx-wabizz/handlers"
 	"itx-wabizz/repositories"
 	"itx-wabizz/router"
 )
@@ -27,9 +26,6 @@ func main() {
 
 	// Initialize all repositories needed
 	repositories.InitRepositories()
-
-	// Initialize messaging client
-	handlers.InitMessagingClient()
 
 	// Initialize Gin router
 	r := gin.Default()

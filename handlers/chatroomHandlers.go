@@ -2,14 +2,12 @@ package handlers
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
-	"firebase.google.com/go/messaging"
-	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
 
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
@@ -82,7 +80,7 @@ func HandleSendMessage(c *gin.Context) {
 	}
 
 	// Check message type and content validity
-	if chat.MessageType == "text" {
+	if chat.MessageType == "text"{
 
 		if err := repositories.ChatRepo.CreateChat(&chat); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message"})
@@ -90,7 +88,7 @@ func HandleSendMessage(c *gin.Context) {
 		}
 
 	} else {
-		if chat.MessageType == "photo" || chat.MessageType == "video" || chat.MessageType == "file" {
+		if chat.MessageType == "photo" ||  chat.MessageType == "video" || chat.MessageType == "file" {
 
 			fileHeader, err := c.FormFile("file")
 			if err != nil {
@@ -232,36 +230,16 @@ func HandleReceiveMessage(c *gin.Context) {
 		return
 	}
 
+
 	err = repositories.ChatRepo.CreateChat(&newChat)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save chat information"})
 		return
 	}
 
-	deviceTokens, err := repositories.UserRepo.GetDeviceTokens()
+	chatJSON, err := json.Marshal(newChat)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"ErrorA": err.Error()})
-		return
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send chat"})
 	}
-
-	if deviceTokens != nil {
-		msg := &messaging.MulticastMessage{
-			Tokens: []string{},
-			Notification: &messaging.Notification{
-				Title: "A",
-				Body:  "A",
-			},
-		}
-
-		response, err := FirebaseClient.SendMulticast(context.Background(), msg)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"ErrorB": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"Message": "Success", "SuccessCount": response.SuccessCount, "FailureCount": response.FailureCount})
-		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{"Message": "Success"})
-	}
+	SendMessageToAll(c, chatJSON)
 }

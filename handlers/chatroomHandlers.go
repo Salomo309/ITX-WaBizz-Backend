@@ -7,8 +7,7 @@ import (
 	"strconv"
 	"time"
 	"github.com/gin-gonic/gin"
-
-	// "os"
+	"io/ioutil"
 
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
@@ -50,8 +49,24 @@ func GetChatroom(c *gin.Context) {
 		return
 	}
 
+	// Initialize a map to hold file bytes
+	files := make(map[int][]byte)
+
+	// Process the file content for non-text messages
+	for _, chat := range chats {
+		if chat.MessageType != "text" {
+			filePath := chat.Content
+			fileBytes, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to read file content"})
+				return
+			}
+			files[chat.ChatID] = fileBytes
+		}
+	}
+
 	// Send information back as response
-	c.JSON(http.StatusOK, gin.H{"Chats": chats})
+	c.JSON(http.StatusOK, gin.H{"Chats": chats, "Files": files})
 }
 
 func HandleSendMessage(c *gin.Context) {
@@ -123,7 +138,7 @@ func HandleSendMessage(c *gin.Context) {
 	requestBody, _ := json.Marshal(infobipMessage)
 	http.Post("http://host.docker.internal:8081/receive", "application/json", bytes.NewBuffer(requestBody))
 
-	c.JSON(http.StatusOK, gin.H{"Message": chat})
+	c.JSON(http.StatusOK, gin.H{"Message": "Message sent successfully"})
 }
 
 func HandleReceiveMessage(c *gin.Context) {

@@ -12,21 +12,23 @@ import (
 type UserRepository interface {
 	Insert(*models.User) (*models.User, error)
 	GetUser(string) (*models.User, error)
+	GetDeviceTokens() ([]string, error)
 	UpdateDeviceToken(string, string) error
 	GetAllUser() ([]models.User, error)
-	MakeActive(email string) error
-	MakeInactive(email string) error
+	MakeActive(string) error
+	MakeInactive(string) error
 }
 
 // Implementation of user repository
 type userRepo struct {
-	db              		*sql.DB
-	insertStmt       		*sql.Stmt
-	getUserStmt      		*sql.Stmt
-	updateDeviceTokenStmt	*sql.Stmt
-	getAllUserStmt   		*sql.Stmt
-	makeActiveStmt   		*sql.Stmt
-	makeInactiveStmt 		*sql.Stmt
+	db                    *sql.DB
+	insertStmt            *sql.Stmt
+	getUserStmt           *sql.Stmt
+	getDeviceTokenStmt    *sql.Stmt
+	updateDeviceTokenStmt *sql.Stmt
+	getAllUserStmt        *sql.Stmt
+	makeActiveStmt        *sql.Stmt
+	makeInactiveStmt      *sql.Stmt
 }
 
 // Function to create new user repository. Prepare all statement and return the instance.
@@ -37,6 +39,11 @@ func NewUserRepository(db *sql.DB) (UserRepository, error) {
 	}
 
 	getUserStmt, err := db.Prepare("SELECT email, is_active, is_admin, device_token FROM Users WHERE email = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	getDeviceTokenStmt, err := db.Prepare("SELECT device_token FROM Users WHERE device_token != ''")
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +69,14 @@ func NewUserRepository(db *sql.DB) (UserRepository, error) {
 	}
 
 	return &userRepo{
-		db:               		db,
-		insertStmt:       		insertStmt,
-		getUserStmt:     	 	getUserStmt,
-		updateDeviceTokenStmt: 	updateDeviceTokenStmt,
-		getAllUserStmt:   		getAllUserStmt,
-		makeActiveStmt:   		makeActiveStmt,
-		makeInactiveStmt: 		makeInactiveStmt,
+		db:                    db,
+		insertStmt:            insertStmt,
+		getUserStmt:           getUserStmt,
+		getDeviceTokenStmt:    getDeviceTokenStmt,
+		updateDeviceTokenStmt: updateDeviceTokenStmt,
+		getAllUserStmt:        getAllUserStmt,
+		makeActiveStmt:        makeActiveStmt,
+		makeInactiveStmt:      makeInactiveStmt,
 	}, nil
 }
 
@@ -95,6 +103,32 @@ func (repo *userRepo) GetUser(email string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+// Return all device token
+func (repo *userRepo) GetDeviceTokens() ([]string, error) {
+	rows, err := repo.getDeviceTokenStmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var deviceTokens []string
+
+	for rows.Next() {
+		var deviceToken string
+		err := rows.Scan(&deviceToken)
+		if err != nil {
+			return nil, err
+		}
+		deviceTokens = append(deviceTokens, deviceToken)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return deviceTokens, nil
 }
 
 // Update spesific user device registration token.
@@ -149,6 +183,6 @@ func (repo *userRepo) MakeInactive(email string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }

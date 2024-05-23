@@ -191,7 +191,7 @@ func HandleReceiveMessage(c *gin.Context) {
 			ChatID:      0,
 			Email:       nil,
 			ChatroomID:  chatroomID,
-			Timendate:   time.Now().Format("2006-01-02 15:04:05"),
+			Timendate:   time.Now().In(time.FixedZone("UTC+7", 7*60*60)).Format("2006-01-02 15:04:05"),
 			IsRead:      &isRead,
 			StatusRead:  nil,
 			Content:     infobipMessage.Results[0].Message.Text,

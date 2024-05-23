@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"io"
+	"itx-wabizz/configs"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -17,11 +18,9 @@ func saveFile(fileHeader *multipart.FileHeader) (string, error) {
 	}
 	defer file.Close()
 
-	storageDir := "../storage"
-
 	// Create the storage directory if it does not exist
-	if _, err := os.Stat(storageDir); os.IsNotExist(err) {
-		err = os.Mkdir(storageDir, os.ModePerm)
+	if _, err := os.Stat(configs.StoragePath); os.IsNotExist(err) {
+		err = os.Mkdir(configs.StoragePath, os.ModePerm)
 		if err != nil {
 			return "", err
 		}
@@ -31,7 +30,7 @@ func saveFile(fileHeader *multipart.FileHeader) (string, error) {
 	filename := fileHeader.Filename
 
 	// Define the file path
-	filePath := filepath.Join(storageDir, filename)
+	filePath := filepath.Join(configs.StoragePath, filename)
 
 	// Create a new file in the storage directory
 	outFile, err := os.Create(filePath)

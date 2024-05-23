@@ -18,24 +18,27 @@ func ConfigureRouter(router *gin.Engine) {
 
 	// Auth endpoints
 	apis.POST("/login", handlers.CheckUserLogin)
+	apis.POST("/logout", handlers.Logout)
+
+	protected := apis.Group("")
+	protected.Use(middlewares.VerifyEmailMiddleware())
 
 	// Chatlist endpoints
-	apis.GET("/chatlist", handlers.GetChatroomList)
-	apis.GET("/chatlist/search/contact", handlers.SearchChatroomByContact)
-	apis.GET("/chatlist/search/message", handlers.SearchChatroomByMessage)
+	protected.GET("/chatlist", handlers.GetChatroomList)
+	protected.GET("/chatlist/search/contact", handlers.SearchChatroomByContact)
+	protected.GET("/chatlist/search/message", handlers.SearchChatroomByMessage)
 
 	// Chat Endpoints
-	apis.GET("/chatroom", handlers.GetChatroom)
-	apis.GET("/chatroom/websocket", handlers.HandleNewWebsocket)
-	apis.POST("/chatroom/send", handlers.HandleSendMessage)
-	apis.POST("/chatroom/receive", handlers.HandleReceiveMessage)
+	protected.GET("/chatroom", handlers.GetChatroom)
+	protected.POST("/chatroom/send", handlers.HandleSendMessage)
+	protected.POST("/chatroom/receive", handlers.HandleReceiveMessage)
 
 	// User endpoints
-	apis.POST("/user/insert", handlers.InsertUser)
-	apis.GET("/user/info", handlers.GetUserInfo)
-	apis.GET("/user/all", handlers.GetAllUserInfo)
-	apis.GET("/user/active", handlers.MakeUserActive)
-	apis.GET("/user/inactive", handlers.MakeUserInactive)
+	protected.POST("/user/insert", handlers.InsertUser)
+	protected.GET("/user/info", handlers.GetUserInfo)
+	protected.GET("/user/all", handlers.GetAllUserInfo)
+	protected.GET("/user/active", handlers.MakeUserActive)
+	protected.GET("/user/inactive", handlers.MakeUserInactive)
 }
 
 func applyCorsMiddleware(router *gin.Engine) {

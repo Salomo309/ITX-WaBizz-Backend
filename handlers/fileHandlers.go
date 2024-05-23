@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"io"
-	"os"
 	"mime/multipart"
-	"path/filepath"
 	"net/http"
 	"net/textproto"
+	"os"
+	"path/filepath"
 )
 
-func SaveFile(fileHeader *multipart.FileHeader) (string, error) {
+func saveFile(fileHeader *multipart.FileHeader) (string, error) {
 	// Open the file
 	file, err := fileHeader.Open()
 	if err != nil {

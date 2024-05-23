@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
-	"github.com/gin-gonic/gin"
 
 	"itx-wabizz/models"
 )
@@ -37,7 +37,10 @@ func HandleInfobipSend(c *gin.Context) {
 	}
 
 	requestBody, _ := json.Marshal(infobipMessage)
-	response, _ := http.Post("http://localhost:8080/api/chatroom/receive", "application/json", bytes.NewBuffer(requestBody))
+	response, err := http.Post("http://localhost:8080/api/chatroom/receive", "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to send message to server"})
+	}
 	defer response.Body.Close()
 
 	var responseData map[string]interface{}

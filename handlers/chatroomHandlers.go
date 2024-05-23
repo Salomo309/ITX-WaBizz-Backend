@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"firebase.google.com/go/messaging"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
 
+	"firebase.google.com/go/messaging"
+	"github.com/gin-gonic/gin"
+
+	"itx-wabizz/configs"
 	"itx-wabizz/models"
 	"itx-wabizz/repositories"
 )
@@ -99,7 +101,7 @@ func HandleSendMessage(c *gin.Context) {
 			}
 
 			// Save file and get the file path
-			filePath, err := SaveFile(fileHeader)
+			filePath, err := saveFile(fileHeader)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
 				return
@@ -138,7 +140,7 @@ func HandleSendMessage(c *gin.Context) {
 	}
 
 	requestBody, _ := json.Marshal(infobipMessage)
-	http.Post("http://host.docker.internal:8081/receive", "application/json", bytes.NewBuffer(requestBody))
+	http.Post(configs.InfobipReceiveEndpoint, "application/json", bytes.NewBuffer(requestBody))
 
 	c.JSON(http.StatusOK, gin.H{"Message": "Message sent successfully"})
 }
@@ -164,7 +166,7 @@ func HandleReceiveMessage(c *gin.Context) {
 		newChatroom := models.Chatroom{
 			ChatroomID:    0,
 			CustomerPhone: customerPhone,
-			CustomerName:  "",
+			CustomerName:  customerPhone,
 		}
 		err := repositories.ChatlistRepo.Insert(&newChatroom)
 		if err != nil {
@@ -204,7 +206,7 @@ func HandleReceiveMessage(c *gin.Context) {
 		}
 
 		// Save the downloaded file
-		filePath, err := SaveFile(fileHeader)
+		filePath, err := saveFile(fileHeader)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save file"})
 			return
@@ -248,8 +250,8 @@ func HandleReceiveMessage(c *gin.Context) {
 		msg := &messaging.MulticastMessage{
 			Tokens: deviceTokens,
 			Notification: &messaging.Notification{
-				Title: "New Message",
-				Body:  "Message received from" + infobipMessage.Results[0].From,
+				Title: "New Message Arrived",
+				Body:  "Message received from customer " + infobipMessage.Results[0].From,
 			},
 		}
 

@@ -16,12 +16,12 @@ func ConfigureRouter(router *gin.Engine) {
 	router.GET("/api", handlers.Welcome)
 	apis := router.Group("/api")
 
-	// Auth endpoints
-	apis.POST("/login", handlers.CheckUserLogin)
-	apis.POST("/logout", handlers.Logout)
-
 	protected := apis.Group("")
 	protected.Use(middlewares.VerifyEmailMiddleware())
+
+	// Auth endpoints
+	apis.POST("/login", handlers.CheckUserLogin)
+	protected.POST("/logout", handlers.Logout)
 
 	// Chatlist endpoints
 	protected.GET("/chatlist", handlers.GetChatroomList)

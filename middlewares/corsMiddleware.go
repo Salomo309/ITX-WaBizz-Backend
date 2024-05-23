@@ -4,6 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+Function: CorsMiddleware
+
+Provide a function for router that enable CORS from all origin
+*/
 func CorsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")

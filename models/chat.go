@@ -1,5 +1,9 @@
 package models
 
+/*
+Struct: Chat ->
+Represent the chat row that is stored in database.
+*/
 type Chat struct {
 	ChatID		 int		`json:"ChatID"`
 	Email		 *string	`json:"Email"`
